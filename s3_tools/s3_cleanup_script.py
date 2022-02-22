@@ -51,6 +51,15 @@ def should_i_delete_bucket(bucket_name, buckets_to_ignore):
             return False
     return True
 
+def delete_bucket(bucket_name):
+    try:
+        print('DELETING CONTENTS....')
+        s3 = boto3.resource('s3')
+        bucket = s3.Bucket(bucket_name)
+        bucket.objects.all().delete()
+        print('CONTENTS REMOVED, DELETING BUCKET...')
+        bucket.delete()
+        print('DELETED')
 
     except Exception as e:
         print('ERROR: ' + str(e))
