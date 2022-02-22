@@ -45,6 +45,13 @@ def delete_buckets(buckets_to_ignore):
         else:
             print(bucket['Name'] + " KEEPING")
 
+def should_i_delete_bucket(bucket_name, buckets_to_ignore):
+    for ignore_bucket in buckets_to_ignore:
+        if ignore_bucket == bucket_name:
+            return False
+    return True
+
+
     except Exception as e:
         print('ERROR: ' + str(e))
 
