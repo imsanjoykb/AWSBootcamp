@@ -11,7 +11,7 @@ glue = boto3.client(service_name='glue', region_name=region)
 tables = glue.get_tables(DatabaseName=database)
 deprecated_tables = []
 # Iterate through all pages
-#print ('ITERATING THROUGH PAGES. THIS MIGHT TAKE A WHILE..')
+print ('ITERATING THROUGH PAGES. THIS MIGHT TAKE A WHILE..')
 while True:
     table_list = tables['TableList']
     for table in table_list:
@@ -19,10 +19,10 @@ while True:
             print ("NOT DELETING --- " + table['Name'])
         else:
             deprecated_tables.append(table['Name'])
-    #print ('DELETENG TABLES:')
-    #print (deprecated_tables)
+    print ('DELETENG TABLES:')
+    print (deprecated_tables)
     glue.batch_delete_table(DatabaseName=database, TablesToDelete=deprecated_tables)
-    #print ('DELETE_COMPLETE')
+    print ('DELETE_COMPLETE')
     if 'NextToken' not in tables:
         break
     else:
