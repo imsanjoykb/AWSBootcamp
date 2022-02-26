@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: "2010-09-09"
+#TODO - Security Groups
+#TODO - Instance Role
+#TODO - Input Parameters (VPC, Subnet)
+#TODO - Add tags
+Parameters:
+  DBUser:
+    Type: String
+    Default: awsuser
+    Description: "Database user."
+  DBPassword:
+    Type: String
+    Default: AwsUser123!
+    Description: "Database password."
+  DBInstanceClass:
+    Type: String
+    Default: db.m5.large
+    AllowedValues:
+      - db.m5.large
+      - db.m5.8xlarge
+      - db.m5.16xlarge
+      - db.m5.24xlarge
+    Description: "Database instance size (CPU, RAM)."
+  DBIops:
+    Type: Number
+    Default: 1000
+    Description: "Database provisioned IOPs"
+  DBStorage:
+    Type: Number
+    Default: 100
+    Description: "Database provisioned Storage"
+Resources:
+  DBMonitoringRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Description: 'Role to add monitoring to RDS instance'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "monitoring.rds.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  CDCParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: 'PostgresSQL parameter group with rds.logical_replication=1 and wal_sender_timeout=0'
+      Family: "postgres12"
+      Parameters:
+        rds.logical_replication: 1
+        wal_sender_timeout: 0
+  HammerDBTestDatabase:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'tpcc'
+      DBInstanceClass: !Ref DBInstanceClass
+      DBParameterGroupName: !Ref CDCParameterGroup
+      AllocatedStorage: !Ref DBStorage
+      Iops: !Ref DBIops
+      Engine: 'postgres'
+      EngineVersion: '12.5'
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      EnablePerformanceInsights: 'True'
+      MonitoringInterval: '30'
+      MonitoringRoleArn: !GetAtt DBMonitoringRole.Arn
+  HammerDBInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: HammerDBTestDatabase
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0cf6f5c8a62fa5da6
+      KeyName: key_generic.pem
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdm"
+          Ebs:
+            VolumeType: "io1"
+            Iops: "200"
+            DeleteOnTermination: "false"
+            VolumeSize: "20"
+      Tags:
+        - Key: Environment
+          Value: hammerdb
+        - Key: Name
+          Value: hammerdb-instance
+      UserData:
+        Fn::Base64: !Sub
+        - |
+          #!/bin/bash -xe
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          yum -y update
+          
+          echo "1. Downloading HammerDB Tar"
+          cd /home/ec2-user
+          curl -L https://github.com/TPC-Council/HammerDB/releases/download/v4.1/HammerDB-4.1-Linux.tar.gz >> HammerDB-4.1-Linux.tar.gz
+          tar -zxvf HammerDB-4.1-Linux.tar.gz
+
+          echo "2. Install postgreSQL client"
+          cat << EOF > /etc/yum.repos.d/pgdg.repo
+          [pgdg12]
+          name=PostgreSQL 12 for RHEL/CentOS 7 - x86_64
+          baseurl=https://download.postgresql.org/pub/repos/yum/12/redhat/rhel-7-x86_64
+          enabled=1
+          gpgcheck=0
+          EOF
+
+          yum makecache
+          yum -y install postgresql12
+
+          echo "3. Configure hammerdb"
+          sed -i 's/<pg_host>localhost/<pg_host>${db_endpoint}/g' HammerDB-4.1/config/postgresql.xml
+          sed -i 's/<pg_superuser>postgres/<pg_superuser>${db_user}/g' HammerDB-4.1/config/postgresql.xml
+          sed -i 's/<pg_superuserpass>postgres/<pg_superuserpass>${db_password}/g' HammerDB-4.1/config/postgresql.xml
+          sed -i 's/<pg_defaultdbase>postgres/<pg_defaultdbase>${db_database}/g' HammerDB-4.1/config/postgresql.xml
+          sed -i 's/<pg_user>tpcc/<pg_user>${db_user}/g' HammerDB-4.1/config/postgresql.xml
+          sed -i 's/<pg_pass>tpcc/<pg_pass>${db_password}/g' HammerDB-4.1/config/postgresql.xml
+
+          echo "4. Download test scrip"
+          wget https://raw.githubusercontent.com/pabloredo/AWSSimpleTools/master/hammerdb_on_ec2/pgrun.tcl
+
+        - db_endpoint: !GetAtt HammerDBTestDatabase.Endpoint.Address
+          db_user: !Ref DBUser
+          db_password: !Ref DBPassword
+          db_database: tpcc
+Outputs:
+  InstancePublicDNS:
+    Description: 'Instance Public DNS'
+    Value: !GetAtt HammerDBInstance.PublicDnsName
+  DBEnpoint:
+    Description: 'Test Database Endpoint'
+    Value: !GetAtt HammerDBTestDatabase.Endpoint.Address
+
+
+
+
