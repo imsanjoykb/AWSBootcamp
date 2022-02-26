@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+#TODO - Reduce scope for DMS Role
+Parameters:
+  SourceDBEndpoint:
+    Type: String
+    Description: "Database host name."
+  SourceDBPort:
+    Type: Number
+    Default: 5432
+    Description: "Database port number."
+  SourceDBUser:
+    Type: String
+    Default: awsuser
+    Description: "Database user."
+  SourceDBPassword:
+    Type: String
+    Default: AwsUser123!
+    Description: "Database password."
+  TargetBucket:
+    Type: String
+    Description: "Target bucket for bulk load and cdc."
+  ReplicationInstanceClass:
+    Type: String
+    Default: dms.t3.medium
+    AllowedValues:
+      - dms.t3.medium
+      - dms.t2.large
+      - dms.c4.2xlarge
+    Description: "Replication instance size."
+Resources:
+  DMSRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Description: 'Role to allow DMS to write to S3'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "dms.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  DMSInstance:
+    Type: AWS::DMS::ReplicationInstance
+    Properties:
+      AllocatedStorage: 50
+      AllowMajorVersionUpgrade: true
+      AutoMinorVersionUpgrade: true
+      EngineVersion: 3.4.4
+      MultiAZ: false
+      PubliclyAccessible: true
+      ReplicationInstanceClass: !Ref ReplicationInstanceClass
+      Tags:
+        - Key: Environment
+          Value: hammerdb_cdc
+  DMSSourceEndpoint:
+    Type: AWS::DMS::Endpoint
+    Properties:
+      DatabaseName: tpcc
+      EndpointType: source
+      EngineName: postgres
+      Username: !Ref SourceDBUser
+      Password: !Ref SourceDBPassword
+      Port: !Ref SourceDBPort
+      ServerName: !Ref SourceDBEndpoint
+      Tags:
+        - Key: Environment
+          Value: hammerdb_cdc
+  DMSTargetEndpoint:
+    Type: AWS::DMS::Endpoint
+    DependsOn:
+      - DMSRole
+    Properties:
+      EndpointType: target
+      EngineName: s3
+      S3Settings:
+        BucketFolder: tpcc
+        BucketName: !Ref TargetBucket
+        ServiceAccessRoleArn: !GetAtt DMSRole.Arn
+      ExtraConnectionAttributes: 'CdcPath=cdc;cdcMaxBatchInterval=60;cdcMinFileSize=32;dataFormat=csv;timestampColumnName=TIMESTAMP;DatePartitionEnabled=true'
+      Tags:
+        - Key: Environment
+          Value: hammerdb_cdc
+  DMSCDCTask:
+    Type: AWS::DMS::ReplicationTask
+    DependsOn:
+      - DMSSourceEndpoint
+      - DMSTargetEndpoint
+      - DMSInstance
+    Properties:
+      MigrationType: full-load-and-cdc
+      ReplicationInstanceArn: !Ref DMSInstance
+      ReplicationTaskSettings: '{ "Logging": { "EnableLogging": true }}'
+      SourceEndpointArn:  !Ref DMSSourceEndpoint
+      TargetEndpointArn: !Ref DMSTargetEndpoint
+      TableMappings: '{
+        "rules": [
+          {
+            "rule-type": "selection",
+            "rule-id": "1",
+            "rule-name": "1",
+            "object-locator": {
+              "schema-name": "public",
+              "table-name": "%"
+            },
+            "rule-action": "include"
+          }
+        ]
+      }'
+      Tags:
+        - Key: Environment
+          Value: hammerdb_cdc
+
