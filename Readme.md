@@ -1,3 +1,11 @@
+<a href="https://terraform.io">
+    <img src="assets\AmazonWebservices.png" alt="aws" title="Terraform" align="right" height="40" />
+</a>
+
+# AWS Bootcamp | Resource | Document | Materials | 
+
+<hr>
+
 ![Author](https://img.shields.io/badge/author-SanjoyBiswas-orange)
 [![GitHub stars](https://badgen.net/github/stars/imsanjoykb/AWSBootcamp)](https://github.com/imsanjoykb/AWSBootcamp/stargazers)
 ![Python](https://img.shields.io/badge/Python-3.8-blueviolet)
@@ -26,6 +34,7 @@
 | 13. AWS Serverless | [ AWS Serverless ](https://github.com/imsanjoykb/AWSBootcamp/blob/master/AWS%20Serverless%20%2B%20Application%20Services.pdf) | 
 | 14. Simple Notification Services | [ Simple Notification Services - SNS ](https://github.com/imsanjoykb/AWSBootcamp/blob/master/AWS%20Serverless%20%2B%20Application%20Services.pdf) | 
 | 15. Amazon EventBridge | [ Amazon Event Bridge ](https://github.com/imsanjoykb/AWSBootcamp/blob/master/AWS%20Serverless%20%2B%20Application%20Services.pdf) | 
+| 16. AWS Certified Solutions Architect Exam Guide | [ AWS Certified Solutions Architect Exam Guide ](https://github.com/imsanjoykb/AWSBootcamp/blob/master/AWS%20Serverless%20%2B%20Application%20Services.pdf) |
 
 <hr>
 
@@ -189,6 +198,7 @@ Portfolio: https://imsanjoykb.github.io/ </br>
 
 <hr>
 
+###
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style)](http://makeapullrequest.com)
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com)
 [![Visual Studio](https://badgen.net/badge/icon/visualstudio?icon=visualstudio&label)](https://visualstudio.microsoft.com)
