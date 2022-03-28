@@ -2,7 +2,7 @@
     <img src="assets\AmazonWebservices.png" alt="aws" title="Terraform" align="right" height="40" />
 </a>
 
-# AWS Bootcamp | Resource | Document | Materials | 
+## AWS Bootcamp | Resource | Document | Materials | 
 
 <hr>
 
@@ -55,6 +55,8 @@ Objectives
 -	📗📘📙 Colors indicate basics, tips, and gotchas, respectively.
 -	🚧 Areas where correction or improvement are needed (possibly with link to an issue — do help!)
 
+<hr>
+
 General Information
 -------------------
 
@@ -103,8 +105,9 @@ General Information
 	-	Azure’s [list of customers](https://azure.microsoft.com/en-us/case-studies/) includes companies such as NBC Universal, 3M and Honeywell Inc.
 	-	Google Cloud’s [list of customers](https://cloud.google.com/customers/) is large as well, and includes a few mainstream sites, such as [Snapchat](http://www.businessinsider.com/snapchat-is-built-on-googles-cloud-2014-1), Best Buy, Domino’s, and Sony Music.
 
-[Back to top :arrow_up:](#table-of-contents)
-### Which Services to Use
+<hr>
+
+## Which Services to Use
 
 -	AWS offers a *lot* of different services — [about a hundred](https://aws.amazon.com/products/) at last count.
 -	Most customers use a few services heavily, a few services lightly, and the rest not at all. What services you’ll use depends on your use cases. Choices differ substantially from company to company.
@@ -185,7 +188,6 @@ General Information
 	-	🕍[CodeDeploy](https://aws.amazon.com/codedeploy/): Deployment of code to EC2 servers. Again, you likely have another solution.
 	-	🕍[OpsWorks](https://aws.amazon.com/opsworks/): Management of your deployments using Chef or (as of November 2017) Puppet Enterprise.
 
-
 <hr>
 
 ### Author: Sanjoy Biswas
@@ -197,6 +199,13 @@ Portfolio: https://imsanjoykb.github.io/ </br>
 [![Gmail Badge](https://img.shields.io/badge/-sanjoy.eee32@gmail.com-c14438?style=flat-squar&logo=Gmail&logoColor=white&link=mailto:sanjoy.eee32@gmail.com)](sanjoy.eee32@gmail.com)
 
 <hr>
+
+Reference : 
+
+https://github.com/open-guides/og-aws<br>
+https://www.linkedin.com/in/kishan-patro-049919164/<br>
+https://www.linkedin.com/in/lydia-white-a30044138/<br>
+https://www.linkedin.com/in/jameslzhang/ <br>
 
 ###
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style)](http://makeapullrequest.com)
